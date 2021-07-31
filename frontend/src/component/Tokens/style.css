@@ -1,0 +1,29 @@
+.row-horizon {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    white-space: nowrap;
+  }
+  .row-horizon > [class*="col-lg"], .row-horizon > [class*="col-md"], .row-horizon > [class*="col-sm"], .row-horizon > [class*="col-xs"] {
+    float: none;
+    display: inline-block;
+    white-space: normal;
+    vertical-align: top;
+  }
+  .row-horizon > .col-xs-12 {
+    width: 75%;
+  }
+  .row-horizon > .col-xs-11 {
+    width: 67.5%;
+  }
+  .row-horizon > .col-xs-10 {
+    width: 60%;
+  }
+  .row-horizon > .col-xs-9 {
+    width: 52.5%;
+  }
+  .row-horizon > .col-xs-8 {
+    width: 45%;
+  }
+  .row-horizon > .col-xs-7 {
+    width: 37.5%;
+  }
