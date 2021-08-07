@@ -1,6 +1,5 @@
 import './style.css';
 import React, {useEffect, useState } from 'react';
-// import Crypto from '../../lib/Crypto';
 import Block from './block';
 import Block2 from './block2';
 import Block3 from './block3';
@@ -28,21 +27,19 @@ function DistributedBlockChain(){
         axios.get("http://localhost:3001/getblockchain").then((res) => {
             
             setListBlocks(res.data.listBlocks)
-        //   setListBlocks(res.data.listBlocks);
+        
   
         });
 
         axios.get("http://localhost:3001/getblockchain").then((res) => {
-            // setLoading(false);
+           
             setListBlocks2(res.data.listBlocks)
-        //   setListBlocks(res.data.listBlocks);
+        
   
         });
 
         axios.get("http://localhost:3001/getblockchain").then((res) => {
-            // setLoading(false);
             setListBlocks3(res.data.listBlocks)
-        //   setListBlocks(res.data.listBlocks);
   
         });
        

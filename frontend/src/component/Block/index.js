@@ -40,23 +40,18 @@ function Block(){
     useEffect(() => {
 
         axios.get("http://localhost:3001/getblock").then((res) => {
-        console.log(res.data.data);
-        console.log(res.data.hash);
-        console.log(res.data.nonce);
-        console.log(res.data.index);
-        console.log(res.data);
+       
         setIndex(res.data.index)
         setNonce(res.data.nonce)
         setData(res.data.data)
 
         setHash(updateHash(res.data.index, res.data.nonce, res.data.data))
-        // setListBlocks(res.data.listBlocks);
+
   
         });
     },[])
     
-    // 
-
+    
 
 
     return (
@@ -67,11 +62,11 @@ function Block(){
             <form className="content-block" style={ checkValidBlock(hash, difficult)?style.success:style.failed}>
                 <div className="form-group row">
                     <label htmlFor="block-id" className="col-sm-2 col-form-label"><b>Block:</b></label>
-                    <div className="input-group col-sm-10">
-                        <div className="input-group-prepend">
-                            <div className="input-group-text">#</div>   
-                        </div>
-                        <input type="text" name="block-id" id="blockId" form="block" value={index} onChange={e => {
+                    <div className="input-group col-sm-5">
+                       
+                        <span className="input-group-addon">#</span>   
+                        
+                        <input class="form-control"  type="text" name="block-id" id="blockId" form="block" value={index} onChange={e => {
                             setIndex(e.target.value);
                             setHash(updateHash(e.target.value, nonce, data));
                         }} />
@@ -88,7 +83,9 @@ function Block(){
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Data:</b></label>
                     <div className="col-sm-10">
-                    <textarea name="textData" id="textData" form="block" value={data} onChange={e => {setData(e.target.value); setHash(updateHash(index, nonce, e.target.value));}} />
+                    <textarea name="textData" id="textData" form="block" value={data} onChange={e => 
+                        {setData(e.target.value);
+                         setHash(updateHash(index, nonce, e.target.value));}} />
                     </div>
                 </div>
                 <div className="form-group row">

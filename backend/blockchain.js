@@ -34,9 +34,6 @@ class Block{
  constructor(index,nonce,data,previousHash, coinbase, keyPair){
     this.index=index
     this.nonce=nonce
-  //  this.timestamp=timestamp
-    // this.transactions=transactions
-    
     this.data = data;
     
     this.previousHash=previousHash
@@ -51,7 +48,7 @@ class Block{
     }
     this.stringData = this.dataToString(data);
     this.hash=this.calculateHash();
-//+JSON.stringify(this.transactions)
+
 
  }
 
@@ -111,7 +108,6 @@ setCoinbase(coinbase) {
         this.hash=this.calculateHash()
 
      }
-    //  console.log("Block Mined: " + this)
      return this;
      
  }
@@ -122,9 +118,8 @@ setCoinbase(coinbase) {
 
 class BlockChain{
     constructor(){
-    //   this.chain=[this.createGenesisBlock()]
+
     this.listBlocks=[this.createGenesisBlock()]
-    // this.difficulty=4
     }
 
 
@@ -137,7 +132,6 @@ class BlockChain{
 
 
     getLatestBlock(){
-        // return this.chain[this.chain.length-1]
         return this.listBlocks[this.listBlocks.length-1]
 
 
@@ -148,8 +142,6 @@ class BlockChain{
         newBlock.mineBlock(4)
         newBlock.hash = newBlock.calculateHash();
         this.listBlocks.push(newBlock)
-
-        // this.chain.push(newBlock)
 
     }
 

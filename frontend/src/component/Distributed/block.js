@@ -3,7 +3,6 @@ import React, {useEffect, useState } from 'react';
 import { SHA256 } from 'crypto-js';
 import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
-
 import Crypto from '../../lib/Crypto';
 
 
@@ -44,7 +43,6 @@ function Block(props){
      console.log(blockNumber)
    const [nonce, setNonce] = useState(item.nonce ?parseInt(item.nonce) : 88483);
    const [blockData, setBlockData] = useState(item.data ? item.data : "");
-  //  const [flagChangeField, setFlagChangeField] = useState(true);
    const [prevHash] = useState(item.previousHash ? item.previousHash : "");
    console.log(item.previousHash)
    const [loading, setLoading] = useState(false);
@@ -77,7 +75,6 @@ const handleSubmit = (e) => {
 
         let nonceUpdate= res.data.nonce;
 
-        // setNonce(nonceUpdate ? parseInt(nonceUpdate) : 1);
         setItem({...item, nonce: nonceUpdate});  
         
         props.onChange(updateChain(props.listBlocks, {...item, nonce: nonceUpdate }, props.index)) ;
@@ -104,14 +101,13 @@ const handleSubmit = (e) => {
         <div className="block" id="block"  > 
         
             <form className="content-block" style={ checkValidBlock(updateHash(blockNumber, nonce, blockData,prevHash), difficult)?style.success:style.failed} onSubmit={handleSubmit}>
-                {console.log("item blabla", item)}
-                <div className="form-group row">
+            <div className="form-group row">
                     <label htmlFor="block-id" className="col-sm-2 col-form-label"><b>Block:</b></label>
-                    <div className="input-group col-sm-10">
-                        <div className="input-group-prepend">
-                            <div className="input-group-text">#</div>   
-                        </div>
-                        <input type="text" name="block-id" id="blockNumberID" form="block" value={blockNumber} onChange={e => {
+                    <div className="input-group col-sm-5">
+                     
+                            <span className="input-group-addon">#</span>   
+                     
+                        <input class="form-control" type="text" name="block-id" id="blockNumberID" form="block" value={blockNumber} onChange={e => {
                            setBlockNumber(e.target.value ? parseInt(e.target.value) : 1)
                            setItem({...item, index: e.target.value})  
                             props.onChange(updateChain(props.listBlocks, {...item, index: e.target.value }, props.index)) ;
@@ -134,7 +130,7 @@ const handleSubmit = (e) => {
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Data:</b></label>
                     <div className="col-sm-10">
-                    <textarea name="textData" id="blockDataID" form="block" value={blockData} onChange={(e) => {
+                    <textarea name="textData" id="textData" form="block" value={blockData} onChange={(e) => {
                            setBlockData(e.target.value ?e.target.value : "");
                             setItem({...item,data: e.target.value})
                             
@@ -181,12 +177,3 @@ const handleSubmit = (e) => {
 }
 
 export default Block;
-
-
-{/* <input className="btn btn-primary" type="button" value="Mine" onClick={(e)=>{
-  e.preventDefault();
-  let nonceUpdate= findNounce(blockNumber, blockData,prevHash, difficult);
-  setNonce(nonceUpdate ? parseInt(nonceUpdate) : 1);
-  setItem({...item, nonce: nonceUpdate});  
-  props.onChange(updateChain(props.listBlocks, {...item, nonce: nonceUpdate }, props.index)) ;
-}}/> */}

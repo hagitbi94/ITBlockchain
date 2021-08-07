@@ -43,13 +43,7 @@ function TransactionSignHelper({item, index, updateItem}){
                     updateItem(itemUpdate);
                 }}   
             />
-          
-         
-         
-        
-         
-          
-               
+           
                 
         </div>
         <div className="input-group">

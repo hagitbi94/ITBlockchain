@@ -1,26 +1,12 @@
 import './style.css';
 import React, {useEffect, useState } from 'react';
 import Crypto from '../../lib/Crypto';
-
 import axios from "axios";
 import CoinbaseHelper from '../coinbasehelp';
 import ClipLoader from "react-spinners/ClipLoader";
 import TransactionSignHelper from '../TranasctionSigndHelper';
 
-const MAX_LOOP = 500000;
 
-function findNonce(item , difficult){
-    console.log("Update nonce", item);
-    for(let i=0; i< MAX_LOOP; i++){
-        item.nonce = i;
-        let hashValue = updateHash(item);
-        if(checkValidBlock(hashValue, difficult)){
-            console.log("Nonce", i);
-            return i;
-        }
-    }
-
-}
 
 function checkValidBlock(hashText, difficult){
     return hashText.slice(0, difficult) === '0'.repeat(difficult)? true: false;
@@ -67,15 +53,13 @@ function Block(props){
        console.log(blockNumber)
      const [nonce, setNonce] = useState(item.nonce ?parseInt(item.nonce) : 88483);
      const [blockData, setBlockData] = useState(item.stringData ? item.stringData : "");
-    //  const [flagChangeField, setFlagChangeField] = useState(true);
      const [prevHash] = useState(item.previousHash ? item.previousHash : "");
      console.log(item.previousHash)
      const [loading, setLoading] = useState(false);
      const [hash, setHash] = useState(item.hash ? item.hash : "");
 
      const [tokens] = useState(item.data ? item.data : "");
-     const [coin] = useState(item.coinbase ? item.coinbase : "");
-    //  let str ="";
+  
 
 
      useEffect(() => {
@@ -83,6 +67,25 @@ function Block(props){
         setHash(updateHash(item));
     
       }, [item]);
+
+
+      useEffect(()=>{
+
+                
+        let str ="";
+        str = item.coinbase.amount + item.coinbase.to;
+        for (let i = 0; i < tokens.length; i++) {
+            
+            
+        str += tokens[i].amount + tokens[i].fromPublic + tokens[i].toPublic +tokens[i].signature;
+          
+        }
+        setBlockData(str);
+        
+
+
+
+},[tokens,item])
 
 
       const handleSubmit = (e) => {
@@ -106,7 +109,6 @@ function Block(props){
       
               let nonceUpdate= res.data.nonce;
       
-              // setNonce(nonceUpdate ? parseInt(nonceUpdate) : 1);
               setItem({...item, nonce: nonceUpdate});  
               
               props.onChange(updateChain(props.listBlocks3, {...item, nonce: nonceUpdate }, props.index)) ;
@@ -125,15 +127,15 @@ function Block(props){
         <body>
         <div className="block" id="block"> 
             <form className="content-block" style={ checkValidBlock(updateHash(item), difficult)?style.success:style.failed} onSubmit={handleSubmit}>
-                <div className="form-group row">
+            <div className="form-group row">
                     <label htmlFor="block-id" className="col-sm-2 col-form-label"><b>Block:</b></label>
-                    <div className="input-group col-sm-10">
-                        <div className="input-group-prepend">
-                            <div className="input-group-text">#</div>   
-                        </div>
-                        <input type="text" name="block-id" id={"block"+blockNumber} form="block" value={blockNumber} onChange={e => {
+                    <div className="input-group col-sm-5">
+                     
+                            <span className="input-group-addon">#</span>   
+                     
+                        <input class="form-control" type="text" name="block-id" id="blockNumberID" form="block" value={blockNumber} onChange={e => {
                            setBlockNumber(e.target.value ? parseInt(e.target.value) : 1)
-                           setItem({...item, index: e.target.value});  
+                           setItem({...item, index: e.target.value})  
                             props.onChange(updateChain(props.listBlocks3, {...item, index: e.target.value }, props.index)) ;
                         }} />
                     </div>

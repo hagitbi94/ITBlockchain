@@ -22,21 +22,21 @@ function Tokens(){
         axios.get("http://localhost:3001/getblockchainwithtrans").then((res) => {
             
             setListBlocks(res.data.listBlocks)
-        //   setListBlocks(res.data.listBlocks);
+       
   
         });
 
         axios.get("http://localhost:3001/getblockchainwithtrans").then((res) => {
-            // setLoading(false);
+           
             setListBlocks2(res.data.listBlocks)
-        //   setListBlocks(res.data.listBlocks);
+       
   
         });
 
         axios.get("http://localhost:3001/getblockchainwithtrans").then((res) => {
-            // setLoading(false);
+            
             setListBlocks3(res.data.listBlocks)
-        //   setListBlocks(res.data.listBlocks);
+      
   
         });
        

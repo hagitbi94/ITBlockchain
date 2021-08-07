@@ -1,7 +1,7 @@
 import {useCookies} from "react-cookie";
 import React, { useState } from 'react';
 import Crypto from '../../lib/Crypto';
-import axios from "axios";
+
 
 
 const [publicK, privateK] = Crypto.genPairKey();
@@ -14,13 +14,12 @@ function Keys(){
     
 
     
-    // print.con(publicK);
+    
     const [privateKey, setPrivateKey] = useState(privateK);
     const [publicKey, setPublicKey] = useState(publicK);
     const [cookies, setCookie] = useCookies(['privateKey', 'publicKey']);
 
-    // console.log("after first first create");
-    // console.log(cookies);
+
 
     function createCookie(prv, pub){
         setCookie('privateKey', prv, {path:'/', maxAge:"86400"})
@@ -52,9 +51,8 @@ function Keys(){
                                     setPublicKey(Crypto.getPulicKey(e.target.value))
                                 }
                             }
-                            // createCookie(privateKey, publicKey);
-                            // console.log("after second create");
-                            // console.log(cookies);
+                            createCookie(privateKey, publicKey);
+                       
                         }
                     }
                     />

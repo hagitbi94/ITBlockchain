@@ -7,9 +7,6 @@ function CoinbaseHelper({item, index, updateItem}){
     const [itemUpdate, setItemUpdate] = useState(item)
 
 
-
-  
-    
     return (
 
 

@@ -5,16 +5,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 
 import Crypto from '../../lib/Crypto';
-// const MAX_LOOP = 500000;
 
-// function findNounce(number, data, prev , difficult){
-//     for(let i=0; i< MAX_LOOP; i++){
-//         let hashValue = updateHash(number, i, data, prev);
-//         if(checkValidBlock(hashValue, difficult)){
-//             return i;
-//         }
-//     }
-// }
 
 function checkValidBlock(hashText, difficult){
     return hashText.slice(0, difficult) === '0'.repeat(difficult)? true: false;
@@ -113,14 +104,13 @@ const handleSubmit = (e) => {
         <div className="block" id="block"  > 
         
             <form className="content-block" style={ checkValidBlock(updateHash(blockNumber, nonce, blockData,prevHash), difficult)?style.success:style.failed} onSubmit={handleSubmit}>
-                {console.log("item blabla", item)}
-                <div className="form-group row">
+            <div className="form-group row">
                     <label htmlFor="block-id" className="col-sm-2 col-form-label"><b>Block:</b></label>
-                    <div className="input-group col-sm-10">
-                        <div className="input-group-prepend">
-                            <div className="input-group-text">#</div>   
-                        </div>
-                        <input type="text" name="block-id" id="blockNumberID" form="block" value={blockNumber} onChange={e => {
+                    <div className="input-group col-sm-5">
+                     
+                            <span className="input-group-addon">#</span>   
+                     
+                        <input class="form-control" type="text" name="block-id" id="blockNumberID" form="block" value={blockNumber} onChange={e => {
                            setBlockNumber(e.target.value ? parseInt(e.target.value) : 1)
                            setItem({...item, index: e.target.value})  
                             props.onChange(updateChain(props.listBlocks2, {...item, index: e.target.value }, props.index)) ;
@@ -143,7 +133,7 @@ const handleSubmit = (e) => {
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Data:</b></label>
                     <div className="col-sm-10">
-                    <textarea name="textData" id="blockDataID" form="block" value={blockData} onChange={(e) => {
+                    <textarea name="textData" id="textData" form="block" value={blockData} onChange={(e) => {
                            setBlockData(e.target.value ?e.target.value : "");
                             setItem({...item,data: e.target.value})
                             

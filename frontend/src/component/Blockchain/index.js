@@ -1,6 +1,5 @@
 import './style.css';
 import React, {useEffect, useState } from 'react';
-// import Crypto from '../../lib/Crypto';
 import { BeatLoader } from "react-spinners";
 import { css } from "@emotion/react";
 import axios from "axios";
