@@ -1,7 +1,10 @@
 import './style.css';
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import Crypto from '../../lib/Crypto';
-import TransactionHelper from '../TransactionHelper';
+import TransactionHelper from "../TransactionHelper";
+import axios from "axios";
+import CoinbaseHelper from '../coinbasehelp';
+import ClipLoader from "react-spinners/ClipLoader";
 
 const MAX_LOOP = 500000;
 
@@ -23,51 +26,114 @@ function checkValidBlock(hashText, difficult){
 }
 
 function updateHash(item){
-    let stringHash = item.number + item.nonce + item.coinbasevalue + item.coinbaseto;
+    let stringHash = item.index + item.nonce + item.coinbase.amount + item.coinbase.to;
 
-    item.txs.forEach((ele, index) => {stringHash += ele.value + ele.from + ele.to});
-    stringHash += item.prev;
+    item.data.forEach((ele, index) => {stringHash += ele.amount + ele.from + ele.to});
+    stringHash += item.previousHash;
     return Crypto.createHash256BaseHex(stringHash);
 }
 
 
 function updateChain(blockChain, item, index){
+    blockChain[index] = item;
     //update all prev hash after current block
-    for(let i=index; i< 4;i++){
+
+    for(let i=index+1; i< 4;i++){
+        let prevBlock = blockChain[i-1];
+        item = prevBlock;
         let prevUpdate = updateHash(item);
-        item = blockChain[i+1] ;
-        blockChain[i+1].prev = prevUpdate;
+        
+        blockChain[i].previousHash= prevUpdate;
     }
     return blockChain;
 }
-
 
 const style = {
     success:{ backgroundColor: "#E0FFFF"},
     failed:{backgroundColor: "#FFE4E1"}
 }
 
-function Block3(props){
+function Block(props){
 
     const difficult = 4;
     const checkItem = props.listBlocks3[props.index];
 
     const [item, setItem] = useState(checkItem);
+
+    const [blockNumber, setBlockNumber] = useState(
+        item.index ? parseInt(item.index) :1
+       );
+       console.log(blockNumber)
+     const [nonce, setNonce] = useState(item.nonce ?parseInt(item.nonce) : 88483);
+     const [blockData, setBlockData] = useState(item.stringData ? item.stringData : "");
+    //  const [flagChangeField, setFlagChangeField] = useState(true);
+     const [prevHash] = useState(item.previousHash ? item.previousHash : "");
+     console.log(item.previousHash)
+     const [loading, setLoading] = useState(false);
+     const [hash, setHash] = useState(item.hash ? item.hash : "");
+
+     const [tokens] = useState(item.data ? item.data : "");
+     const [coin] = useState(item.coinbase ? item.coinbase : "");
+    //  let str ="";
+
+
+     useEffect(() => {
+
+        setHash(updateHash(item));
+    
+      }, [item]);
+
+
+      const handleSubmit = (e) => {
+        if (e !== false) {
+          e.preventDefault();
+          setLoading(true);
+        }
+        axios
+          .get("http://localhost:3001/mineblock", {
+            params: {
+              index: blockNumber,
+              nonce: nonce,
+              data: blockData,
+              prevHash: prevHash,
+            },
+          })
+          .then((res) => {
+            if (e !== false) {
+      
+              setNonce(res.data.nonce);
+      
+              let nonceUpdate= res.data.nonce;
+      
+              // setNonce(nonceUpdate ? parseInt(nonceUpdate) : 1);
+              setItem({...item, nonce: nonceUpdate});  
+              
+              props.onChange(updateChain(props.listBlocks3, {...item, nonce: nonceUpdate }, props.index)) ;
+              setLoading(false);
+            }
+          });
+      };
+
+
+
+
+
     return (
         <div class="col-xs-7">
         
         <body>
         <div className="block" id="block"> 
-            <form className="content-block" style={ checkValidBlock(updateHash(item), difficult)?style.success:style.failed}>
+            <form className="content-block" style={ checkValidBlock(updateHash(item), difficult)?style.success:style.failed} onSubmit={handleSubmit}>
                 <div className="form-group row">
                     <label htmlFor="block-id" className="col-sm-2 col-form-label"><b>Block:</b></label>
                     <div className="input-group col-sm-10">
                         <div className="input-group-prepend">
                             <div className="input-group-text">#</div>   
                         </div>
-                        <input type="text" name="block-id" id={"block"+item.number} form="block" value={item.number} onChange={e => {
-                            setItem({...item, number: e.target.value});  
-                            props.onChange(updateChain(props.listBlocks3, {...item, number: e.target.value }, props.index)) ;
+                        <input type="text" name="block-id" id={"block"+blockNumber} form="block" value={blockNumber} onChange={e => {
+                           setBlockNumber(e.target.value ? parseInt(e.target.value) : 1)
+                           setItem({...item, index: e.target.value});  
+                            props.onChange(updateChain(props.listBlocks3, {...item, index: e.target.value }, props.index)) ;
                         }} />
                     </div>
                 </div>
@@ -75,7 +141,8 @@ function Block3(props){
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Nonce:</b></label>
                     <div className="col-sm-10">
-                        <input name="textnounce" id={"nounce"+item.number} form="block" value={item.nonce} onChange={e => {
+                        <input name="textnounce" id={"nounce"+item.index} form="block" value={nonce} onChange={e => {
+                            setNonce(e.target.value ? parseInt(e.target.value) : 1);
                             setItem({...item, nonce: e.target.value});  
                             props.onChange(updateChain(props.listBlocks3, {...item, nonce: e.target.value }, props.index)) ;
                         }} />
@@ -85,28 +152,32 @@ function Block3(props){
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Coinbase:</b></label>
                     <div className="col-sm-10">
-                        <div className="input-group">
-                            <div className="input-group-addon">
-                                <span className="input-group-text">$</span>
-                            </div>
-                            <input className="form-control" id={"coinbase"+item.number} type="text" value={item.coinbasevalue} 
-                                onChange={e => {
-                                    item.coinbasevalue = e.target.value;
-                                    setItem({...item});  
-                                    props.onChange(updateChain(props.listBlocks3, {...item}, props.index)) ;
-                                }}
-                            />
-                            <div className="input-group-addon">
-                                <span className="input-group-text">-{">"}</span>
-                            </div>
-                            <input className="form-control" id={"coinbaseto"+item.number} type="text" value={item.coinbaseto} 
-                                onChange={e => {
-                                    item.coinbaseto = e.target.value;
-                                    setItem({...item});  
-                                    props.onChange(updateChain(props.listBlocks3, {...item}, props.index)) ;
-                                }}
-                            />
-                        </div>
+             
+             {
+
+
+                          
+                        <CoinbaseHelper key={props.index} index={props.index} item={props.listBlocks3[props.index]}
+                        
+                        updateItem={(item)=>{
+                            let str ="";
+                            str = item.coinbase.amount + item.coinbase.to;
+                            for (let i = 0; i < tokens.length; i++) {
+                                
+                                
+                            str += tokens[i].amount + tokens[i].from + tokens[i].to ;
+                              
+                            }
+                            setBlockData(str);
+                            setItem({...item});
+                            
+                            props.onChange(updateChain(props.listBlocks3, {...item}, props.index)) ;
+                            
+                        }
+                        
+                    }/>
+                   
+             }
                     </div>
                 </div>
 
@@ -115,41 +186,62 @@ function Block3(props){
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 control-label"><b>Tx:</b></label>
                     <div className="col-sm-10">
-                    { 
-                        props.listBlocks3[props.index].txs.map( (ele, index)=>{
+                     
+                         { 
+                    
+                    
+                    Object.values(tokens).map( (ele, index)=>{
+
+                         
+                       
+                      let str ="";
+                      str = item.coinbase.amount + item.coinbase.to;
                             return <TransactionHelper  key={index} index={index} item={props.listBlocks3[props.index]} 
+                          
                             updateItem={(item)=>{
+                                
+                                for (let i = 0; i < tokens.length; i++) {
+                                    
+                                    
+                                str += tokens[i].amount + tokens[i].from + tokens[i].to ;
+                                  
+                                }
+                                setBlockData(str);
                                 setItem({...item});
+                                
                                 props.onChange(updateChain(props.listBlocks3, {...item}, props.index)) ;
+                                
                             }
+                            
                         }/>
                         })
+                        
                     }
+                    
                     </div>
                 </div>
                 <div className="form-group row">
                     <label htmlFor="colFormLabel" className="col-sm-2 col-form-label"><b>Prev:</b></label>
                     <div className="col-sm-10">
-                    <input type="text" className="form-control" id={"prev"+item.number} value={item.prev} disabled/>
+                    <input type="text" className="form-control" id={"prev"+item.index} value={prevHash} disabled/>
                     </div>
                 </div>
 
                 <div className="form-group row">
                     <label htmlFor="colFormLabel" className="col-sm-2 col-form-label"><b>Hash:</b></label>
                     <div className="col-sm-10">
-                    <input type="text" className="form-control" id={"hash"+item.number} value={updateHash(item)} disabled/>
+                    <input type="text" className="form-control" id={"hash"+item.index} value={hash} disabled/>
                     </div>
                 </div>
 
                 <div className="form-group row">
                     <div className="col-sm-2"><i className="icon-spinner icon-spin icon-large"></i></div>
                     <div className="col-sm-10">
-                    <input className="btn btn-primary" type="button" value="Mine" onClick={(e)=>{
-                        e.preventDefault();
-                        let nonceUpdate= findNonce(item, difficult);
-                        setItem({...item, nonce: nonceUpdate});  
-                        props.onChange(updateChain(props.listBlocks3, {...item, nonce: nonceUpdate }, props.index)) ;
-                    }}/>
+                    <button type="submit" className="btn btn-primary">
+
+{loading ? "" : "Mine"}
+<ClipLoader color={"#25373b"} loading={loading} size={25} />
+</button>
                     </div>
                 
                 </div>
@@ -161,4 +253,4 @@ function Block3(props){
     );
 }
 
-export default Block3;
+export default Block;

@@ -31,55 +31,125 @@ class Coinbase {
 
 
 class Block{
- constructor(index,timestamp,transactions,previousHash=''){
+ constructor(index,nonce,data,previousHash, coinbase, keyPair){
     this.index=index
+    this.nonce=nonce
+  //  this.timestamp=timestamp
+    // this.transactions=transactions
+    
+    this.data = data;
+    
     this.previousHash=previousHash
-    this.timestamp=timestamp
-    this.transactions=transactions
+    if (coinbase) {
+        this.coinbase = coinbase;
+    } else {
+        this.coinbase = "";
+    }
+
+    if (keyPair) {
+        this.privateKey = keyPair.getPrivate("hex");
+    }
+    this.stringData = this.dataToString(data);
     this.hash=this.calculateHash();
-    this.nonce=0
+//+JSON.stringify(this.transactions)
+
+ }
+
+
+ dataToString(data) {
+    if (data instanceof String || typeof data === 'string') {
+        return data;
+    }
+
+    let str = "";
+
+    if (this.privateKey) {
+        for (let i = 0; i < data.length; i++) {
+            str += data[i].amount + data[i].fromPublic + data[i].toPublic + data[i].signature;
+        }
+    } else {
+        for (let i = 0; i < data.length; i++) {
+            str += data[i].amount + data[i].from + data[i].to;
+        }
+    }
+    if (this.coinbase != "") {
+        return (this.coinbase.amount + this.coinbase.to + str)
+    }
+    return str;
+
+
 
 
  }
 
  calculateHash(){
-    return SHA256(this.index+this.previousHash+ this.nonce + this.timestamp+JSON.stringify(this.transactions)).toString()
+    return SHA256(this.index + this.nonce + this.stringData +this.previousHash ).toString()
  }
+
+ setTransactions(Transactions) {
+    this.data = Transactions;
+    this.stringData = this.dataToString(Transactions);
+    this.hash = this.calculateHash();
+    this.mineBlock(4)
+}
+
+setCoinbase(coinbase) {
+    this.coinbase = coinbase;
+    this.stringData = this.dataToString(this.data);
+    this.hash = this.calculateHash();
+    this.mineBlock(4)
+}
+
 
 
 
  mineBlock(difficulty){
-     while(this.hash.substring(0,difficulty)!== Array(difficulty+1).join(0)){
-        this.nonce++
+    this.nonce = 0;
+    this.hash=this.calculateHash()
+     while(this.hash.substring(0,difficulty)!== Array(difficulty+1).join("0")){
+        this.nonce++;
         this.hash=this.calculateHash()
 
      }
-     console.log("Block Mined: " + this.hash)
+    //  console.log("Block Mined: " + this)
+     return this;
+     
  }
+   
 }
 
 
 
 class BlockChain{
     constructor(){
-      this.chain=[this.createGenesisBlock()]
-      this.difficulty=4
+    //   this.chain=[this.createGenesisBlock()]
+    this.listBlocks=[this.createGenesisBlock()]
+    // this.difficulty=4
     }
 
+
     createGenesisBlock(){
-        return new Block(0,"20/07/2021","Genesis Block","0")
+        var block = new Block(1,1,"",'0000000000000000000000000000000000000000000000000000000000000000');
+        block.mineBlock(4)
+        return block;
+        
     }
 
 
     getLatestBlock(){
-        return this.chain[this.chain.length-1]
+        // return this.chain[this.chain.length-1]
+        return this.listBlocks[this.listBlocks.length-1]
+
 
     }
 
     addBlock(newBlock){
         newBlock.previousHash=this.getLatestBlock().hash
-        newBlock.mineBlock(this.difficulty)
-        this.chain.push(newBlock)
+        newBlock.mineBlock(4)
+        newBlock.hash = newBlock.calculateHash();
+        this.listBlocks.push(newBlock)
+
+        // this.chain.push(newBlock)
 
     }
 
@@ -91,3 +161,5 @@ class BlockChain{
 
 module.exports.BlockChain=BlockChain
 module.exports.Block=Block
+module.exports.Transaction=Transaction
+module.exports.Coinbase=Coinbase

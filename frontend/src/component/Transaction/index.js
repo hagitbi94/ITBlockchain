@@ -23,11 +23,12 @@ function Transaction(){
     const [active, setActive] = useState(false);
     const cookies = getCookie();
     const [privateKey] = useState(cookies["privateKey"]);
-    const [msg, setMsg] = useState(cookies["msg"]?cookies["msg"]:"")
+    const [msg, setMsg] = useState("20.00")
     const [publicKey, setPublicKey] = useState(cookies["publicKey"]);
     const [signature, setSignature] = useState();
     const [verify, setVerify] = useState('none');
-
+    const [sendTo, setSendTo] = useState("04cc955bf8e359cc7ebbb66f4c2dc616a93e8ba08e93d27996e20299ba92cba9cbd73c2ff46ed27a3727ba09486ba32b5ac35dd20c0adec020536996ca4d9f3d74")
+    // setMsg("20.00")
     return (
         <>
 
@@ -56,11 +57,36 @@ function Transaction(){
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Message:</b></label>
                     <div className="input-group">
                         <div class="input-group-addon">$</div>
-                        <input class="form-control" id="sign-amount" value="20.00"></input>
+                        <input class="form-control" id="sign-amount" value={msg} onChange={e =>{
+                            setMsg(e.target.value);
+                            // createCookie(e.target.value);
+
+                        }
+
+
+                        }
+                        
+                        
+                        ></input>
                         <div class="input-group-addon">From:</div>
-                        <input class="form-control" value={publicKey} id="sign-from"></input>
+                        <input class="form-control" value={publicKey} id="sign-from" onChange={(e)=>{
+
+                             setPublicKey(e.target.value)
+                        }}
+                        
+                        
+                        
+                        ></input>
                         <div class="input-group-addon">-{'>'}</div>
-                        <input class="form-control" id="sign-to" value="04cc955bf8e359cc7ebbb66f4c2dc616a93e8ba08e93d27996e20299ba92cba9cbd73c2ff46ed27a3727ba09486ba32b5ac35dd20c0adec020536996ca4d9f3d74"></input>
+                        <input class="form-control" id="sign-to" value={sendTo} onChange={(e) =>{
+
+                            setSendTo(e.target.value)
+                        }
+
+
+
+
+                        }></input>
 
 
                     </div>

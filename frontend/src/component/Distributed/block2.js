@@ -1,54 +1,107 @@
 import './style.css';
-import React, { useState } from 'react';
-import Crypto from '../../lib/Crypto';
-const MAX_LOOP = 500000;
+import React, {useEffect, useState } from 'react';
+import { SHA256 } from 'crypto-js';
+import ClipLoader from "react-spinners/ClipLoader";
+import axios from "axios";
 
-function findNounce(number, data, prev , difficult){
-    for(let i=0; i< MAX_LOOP; i++){
-        let hashValue = updateHash(number, i, data, prev);
-        if(checkValidBlock(hashValue, difficult)){
-            return i;
-        }
-    }
-}
+import Crypto from '../../lib/Crypto';
+// const MAX_LOOP = 500000;
+
+// function findNounce(number, data, prev , difficult){
+//     for(let i=0; i< MAX_LOOP; i++){
+//         let hashValue = updateHash(number, i, data, prev);
+//         if(checkValidBlock(hashValue, difficult)){
+//             return i;
+//         }
+//     }
+// }
 
 function checkValidBlock(hashText, difficult){
     return hashText.slice(0, difficult) === '0'.repeat(difficult)? true: false;
 }
 
-function updateHash(number, nonce, data, prev = ""){
+function updateHash(number, nonce, data, prev){
 
     return Crypto.createHash256BaseHex(number + nonce  + data+ prev);
 }
 
-
 function updateChain(blockChain, item, index){
     blockChain[index] = item;
     //update all prev hash after current block
-    for(let i=index+1; i< 5;i++){
+    for(let i=index+1; i< 4;i++){
         let prevBlock = blockChain[i-1];
-        let prevUpdate = updateHash(prevBlock.number, prevBlock.nonce, prevBlock.data, prevBlock.prev);
-        blockChain[i].prev = prevUpdate;
+        let prevUpdate = updateHash(prevBlock.index, prevBlock.nonce, prevBlock.data, prevBlock.previousHash);
+        blockChain[i].previousHash = prevUpdate;
     }
     return blockChain;
 }
-
 
 const style = {
     success:{ backgroundColor:"#E0FFFF"},
     failed:{backgroundColor: "#FFE4E1"}
 }
-function Block2(props){
+function Block(props){
 
     const difficult = 4;
     const checkItem = props.listBlocks2[props.index];
-  
-
-
+    console.log(checkItem)
     const [item, setItem] = useState(checkItem);
- 
-    return (
+    console.log(item)
+    const [blockNumber, setBlockNumber] = useState(
+      item.index ? parseInt(item.index) :1
+     );
+     console.log(blockNumber)
+   const [nonce, setNonce] = useState(item.nonce ?parseInt(item.nonce) : 88483);
+   const [blockData, setBlockData] = useState(item.data ? item.data : "");
+  //  const [flagChangeField, setFlagChangeField] = useState(true);
+   const [prevHash] = useState(item.previousHash ? item.previousHash : "");
+   console.log(item.previousHash)
+   const [loading, setLoading] = useState(false);
+   const [hash, setHash] = useState(item.hash ? item.hash : "");
 
+   useEffect(()=>{
+    setHash(SHA256(blockNumber + nonce+ blockData + prevHash).toString())
+    
+},[blockNumber ,nonce, blockData , prevHash])
+
+
+const handleSubmit = (e) => {
+  if (e !== false) {
+    e.preventDefault();
+    setLoading(true);
+  }
+  axios
+    .get("http://localhost:3001/mineblock", {
+      params: {
+        index: blockNumber,
+        nonce: nonce,
+        data: blockData,
+        prevHash: prevHash,
+      },
+    })
+    .then((res) => {
+      if (e !== false) {
+
+        setNonce(res.data.nonce);
+
+        let nonceUpdate= res.data.nonce;
+
+        // setNonce(nonceUpdate ? parseInt(nonceUpdate) : 1);
+        setItem({...item, nonce: nonceUpdate});  
+        
+        props.onChange(updateChain(props.listBlocks2, {...item, nonce: nonceUpdate }, props.index)) ;
+        setLoading(false);
+      }
+    });
+};
+
+
+
+
+
+
+   
+    return (
 
 
         <>
@@ -59,7 +112,7 @@ function Block2(props){
          
         <div className="block" id="block"  > 
         
-            <form className="content-block" style={ checkValidBlock(updateHash(item.number, item.nonce, item.data, item.prev), difficult)?style.success:style.failed}>
+            <form className="content-block" style={ checkValidBlock(updateHash(blockNumber, nonce, blockData,prevHash), difficult)?style.success:style.failed} onSubmit={handleSubmit}>
                 {console.log("item blabla", item)}
                 <div className="form-group row">
                     <label htmlFor="block-id" className="col-sm-2 col-form-label"><b>Block:</b></label>
@@ -67,9 +120,10 @@ function Block2(props){
                         <div className="input-group-prepend">
                             <div className="input-group-text">#</div>   
                         </div>
-                        <input type="text" name="block-id" id="blockId" form="block" value={item.number} onChange={e => {
-                            setItem({...item, number: e.target.value});  
-                            props.onChange(updateChain(props.listBlocks2, {...item, number: e.target.value }, props.index)) ;
+                        <input type="text" name="block-id" id="blockNumberID" form="block" value={blockNumber} onChange={e => {
+                           setBlockNumber(e.target.value ? parseInt(e.target.value) : 1)
+                           setItem({...item, index: e.target.value})  
+                            props.onChange(updateChain(props.listBlocks2, {...item, index: e.target.value }, props.index)) ;
                         }} />
                     </div>
                 </div>
@@ -77,8 +131,10 @@ function Block2(props){
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Nonce:</b></label>
                     <div className="col-sm-10">
-                        <input name="textnounce" id="nounce" form="block" value={item.nonce} onChange={e => {
-                            setItem({...item, nonce: e.target.value});  
+                        <input name="textnounce" id="nonceId" form="block" value={nonce} onChange={e => {
+                             
+                            setNonce(e.target.value ? parseInt(e.target.value) : 1);
+                            setItem({...item, nonce: e.target.value})
                             props.onChange(updateChain(props.listBlocks2, {...item, nonce: e.target.value }, props.index)) ;
                         }} />
                     </div>
@@ -87,8 +143,10 @@ function Block2(props){
                 <div className="form-group row">
                     <label htmlFor="data-row" className="col-sm-2 col-form-label"><b>Data:</b></label>
                     <div className="col-sm-10">
-                    <textarea name="textData" id="textData" form="block" value={item.data} onChange={(e) => {
-                            setItem({...item, data: e.target.value});  
+                    <textarea name="textData" id="blockDataID" form="block" value={blockData} onChange={(e) => {
+                           setBlockData(e.target.value ?e.target.value : "");
+                            setItem({...item,data: e.target.value})
+                            
                             props.onChange(updateChain(props.listBlocks2, {...item, data: e.target.value }, props.index)) ;             
                             }} />
                     </div>
@@ -96,26 +154,27 @@ function Block2(props){
                 <div className="form-group row">
                     <label htmlFor="colFormLabel" className="col-sm-2 col-form-label"><b>Prev:</b></label>
                     <div className="col-sm-10">
-                    <input type="text" className="form-control" id="valuePrev" value={item.prev} disabled/>
+                    <input type="text" className="form-control" id="valuePrev" value={prevHash} disabled 
+                    />
                     </div>
                 </div>
 
                 <div className="form-group row">
                     <label htmlFor="colFormLabel" className="col-sm-2 col-form-label"><b>Hash:</b></label>
                     <div className="col-sm-10">
-                    <input type="text" className="form-control" id="valueHash" value={updateHash(item.number, item.nonce, item.data, item.prev)} disabled/>
+                    <input type="text" className="form-control" id="valueHash" value={hash} disabled/>
                     </div>
                 </div>
 
                 <div className="form-group row">
                     <div className="col-sm-2"><i className="icon-spinner icon-spin icon-large"></i></div>
                     <div className="col-sm-10">
-                    <input className="btn btn-primary" type="button" value="Mine" onClick={(e)=>{
-                        e.preventDefault();
-                        let nonceUpdate= findNounce(item.number, item.data, item.prev , difficult).toString();
-                        setItem({...item, nonce: nonceUpdate});  
-                        props.onChange(updateChain(props.listBlocks2, {...item, nonce: nonceUpdate }, props.index)) ;
-                    }}/>
+                    <button type="submit" className="btn btn-primary">
+
+                      {loading ? "" : "Mine"}
+                      <ClipLoader color={"#25373b"} loading={loading} size={25} />
+                      </button>
+
                     </div>
                 
                 </div>
@@ -125,18 +184,18 @@ function Block2(props){
 
         </body>
         </div>
-
-
-
-
-
-
-
-
-
     </>
     
     );
 }
 
-export default Block2;
+export default Block;
+
+
+{/* <input className="btn btn-primary" type="button" value="Mine" onClick={(e)=>{
+  e.preventDefault();
+  let nonceUpdate= findNounce(blockNumber, blockData,prevHash, difficult);
+  setNonce(nonceUpdate ? parseInt(nonceUpdate) : 1);
+  setItem({...item, nonce: nonceUpdate});  
+  props.onChange(updateChain(props.listBlocks, {...item, nonce: nonceUpdate }, props.index)) ;
+}}/> */}

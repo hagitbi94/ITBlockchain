@@ -1,13 +1,18 @@
 import {useCookies} from "react-cookie";
 import React, { useState } from 'react';
 import Crypto from '../../lib/Crypto';
-
+import axios from "axios";
 
 
 const [publicK, privateK] = Crypto.genPairKey();
 
 
+
+
+
 function Keys(){
+    
+
     
     // print.con(publicK);
     const [privateKey, setPrivateKey] = useState(privateK);
@@ -28,7 +33,8 @@ function Keys(){
    console.log(cookies);
     return (
 <>
-        <body>
+
+<body>
         <div class="container">
         <div className="block" id="block"> 
             <form className="content-block">
@@ -46,21 +52,15 @@ function Keys(){
                                     setPublicKey(Crypto.getPulicKey(e.target.value))
                                 }
                             }
-                            createCookie(privateKey, publicKey);
-                            console.log("after second create");
-                            console.log(cookies);
+                            // createCookie(privateKey, publicKey);
+                            // console.log("after second create");
+                            // console.log(cookies);
                         }
                     }
                     />
                     </div>
-                </div>
-                <div className="form-group row">
-                    <label htmlFor="colFormLabel" className="col-sm-2 col-form-label"><b>Public Key:</b></label>
-                    <div className="col-sm-10">
-                    <input type="text" className="form-control" id="publicKey" value={publicKey} disabled/>
-                    </div>
-                </div>
-                <div className="form-group row">
+
+                   
                     <div className="col-sm-2"><i className="icon-spinner icon-spin icon-large"></i></div>
                     <div className="col-sm-10">
                     <input className="btn btn-primary" type="button" value="Random" onClick={(e)=>{
@@ -74,13 +74,22 @@ function Keys(){
                         console.log(cookies);
                     }}/>
                     </div>
+              
                 </div>
+                <div className="form-group row">
+                    <label htmlFor="colFormLabel" className="col-sm-2 col-form-label"><b>Public Key:</b></label>
+                    <div className="col-sm-10">
+                    <input type="text" className="form-control" id="publicKey" value={publicKey} disabled/>
+                    </div>
+                </div>
+              
 
             </form>
         </div>
-</div>
 
+</div>
         </body>
+
         </>
     );
 }
